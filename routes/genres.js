@@ -18,53 +18,51 @@ router.get("/", async (req, res) => {
   res.send(genres);
 });
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { error } = validateGenre(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const genre = new Genre({
     name: req.body.name,
   });
-  try{
+  try {
     const result = await genre.save();
     res.send(result);
-  }
-  catch(ex){
+  } catch (ex) {
     res.send(ex.message);
   }
 });
 
 router.put("/:id", async (req, res) => {
-  const genre = await Genre.find({_id: parseInt(req.params.id)})
+  const { error } = validateGenre(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  const genre = await Genre.findById(parseInt(req.params.id));
   if (!genre)
     return res.status(404).send("The genre with the given ID was not found.");
 
-  const { error } = validateGenre(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   genre.name = req.body.name;
-  try{
-    const result = await genre.save()
+  try {
+    const result = await genre.save();
     res.send(result);
-  }
-  catch(ex){
+  } catch (ex) {
     res.send(ex.message);
   }
 });
 
-router.delete("/:id", (req, res) => {
-  const genre = genres.find((c) => c.id === parseInt(req.params.id));
+router.delete("/:id", async (req, res) => {
+  const genre = await Genre.findById(parseInt(req.param.id));
   if (!genre)
     return res.status(404).send("The genre with the given ID was not found.");
-
-  const index = genres.indexOf(genre);
-  genres.splice(index, 1);
-
-  res.send(genre);
+  try {
+    const result = await genre.delete();
+    res.send(result);
+  } catch (ex) {
+    res.send(ex.message);
+  }
 });
 
-router.get("/:id", (req, res) => {
-  const genre = genres.find((c) => c.id === parseInt(req.params.id));
+router.get("/:id", async (req, res) => {
+  const genre = await Genre.findById(parseInt(req.params.id));
   if (!genre)
     return res.status(404).send("The genre with the given ID was not found.");
   res.send(genre);
