@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const express = require("express");
+const Joi = require("joi");
 const router = express.Router();
 
 const genreSchema = new mongoose.Schema({
@@ -11,7 +12,7 @@ const genreSchema = new mongoose.Schema({
   },
 });
 
-const Genre = new mongoose.model("Genre", genreSchema);
+const Genre = mongoose.model("Genre", genreSchema);
 
 router.get("/", async (req, res) => {
   const genres = await Genre.find().sort({ name: 1 });
@@ -25,44 +26,31 @@ router.post("/", async (req, res) => {
   const genre = new Genre({
     name: req.body.name,
   });
-  try {
-    const result = await genre.save();
-    res.send(result);
-  } catch (ex) {
-    res.send(ex.message);
-  }
+  const result = await genre.save();
+  res.send(result);
 });
 
 router.put("/:id", async (req, res) => {
   const { error } = validateGenre(req.body);
   if (error) return res.status(400).send(error.details[0].message);
-  const genre = await Genre.findById(parseInt(req.params.id));
+  const genre = await Genre.findById(req.params.id);
   if (!genre)
     return res.status(404).send("The genre with the given ID was not found.");
-
   genre.name = req.body.name;
-  try {
-    const result = await genre.save();
-    res.send(result);
-  } catch (ex) {
-    res.send(ex.message);
-  }
+  const result = await genre.save();
+  res.send(result);
 });
 
 router.delete("/:id", async (req, res) => {
-  const genre = await Genre.findById(parseInt(req.param.id));
+  const genre = await Genre.findById(req.params.id);
   if (!genre)
     return res.status(404).send("The genre with the given ID was not found.");
-  try {
-    const result = await genre.delete();
-    res.send(result);
-  } catch (ex) {
-    res.send(ex.message);
-  }
+  const result = await genre.delete();
+  res.send(result);
 });
 
 router.get("/:id", async (req, res) => {
-  const genre = await Genre.findById(parseInt(req.params.id));
+  const genre = await Genre.findById(req.params.id);
   if (!genre)
     return res.status(404).send("The genre with the given ID was not found.");
   res.send(genre);
